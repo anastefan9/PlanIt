@@ -38,7 +38,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,12 +47,9 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.planit.R
 import com.example.planit.model.Project
 import com.example.planit.model.Task
-import com.example.planit.viewModel.ProjectsViewModel
-import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -62,7 +58,6 @@ import java.util.Locale
 fun AddProjectScreen(
     closeProject: () -> Unit,
     onSave: (Project) -> Unit,
-    projectsViewModel: ProjectsViewModel = viewModel(),
     modifier: Modifier = Modifier
         .fillMaxSize()
 ) {
@@ -78,7 +73,6 @@ fun AddProjectScreen(
         var finalDate by remember { mutableStateOf("") }
         var tasks by remember { mutableStateOf<List<Task>>(emptyList()) }
         var newTaskName by remember { mutableStateOf("") }
-        val scope = rememberCoroutineScope()
 
         Column(
             modifier = Modifier
@@ -189,14 +183,7 @@ fun AddProjectScreen(
                                 tasks = tasks
                             )
 
-                            scope.launch {
-                                try {
-                                    projectsViewModel.addProject(newProject)
-                                    onSave(newProject)
-                                } catch (e: Exception) {
-                                    e.printStackTrace()
-                                }
-                            }
+                            onSave(newProject)
                         }
                     }
                 ) {
