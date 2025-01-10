@@ -14,15 +14,13 @@ import androidx.navigation.compose.rememberNavController
 import com.example.planit.screens.addProject.AddProjectScreen
 import com.example.planit.screens.home.HomeScreen
 import com.example.planit.ui.theme.PlanItTheme
-import com.google.firebase.FirebaseApp
-
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        FirebaseApp.initializeApp(this)
         setContent {
             PlanItTheme {
+                // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background

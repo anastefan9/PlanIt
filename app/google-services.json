@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "1006638472226",
+    "firebase_url": "https://base-6e3c9-default-rtdb.firebaseio.com",
+    "project_id": "base-6e3c9",
+    "storage_bucket": "base-6e3c9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1006638472226:android:8379653afadeb144147e7b",
+        "android_client_info": {
+          "package_name": "com.example.planit"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBrNH5Fvc11tMY97MqKEw5i15Wg9AKT6pc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
