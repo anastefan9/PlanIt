@@ -14,4 +14,10 @@ interface FirestoreApiService {
 
     @DELETE("{documentPath}")
     suspend fun deleteProject(@Path("documentPath", encoded = true) documentPath: String): Response<Unit>
+
+    @PUT("{documentPath}")
+    suspend fun updateProject(
+        @Path(value = "documentPath", encoded = true) documentPath: String,
+        @Body project: FirestoreRequest
+    ): Response<Unit>
 }

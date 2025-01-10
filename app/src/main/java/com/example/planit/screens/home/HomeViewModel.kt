@@ -73,7 +73,7 @@ class HomeViewModel : ViewModel() {
             try {
                 val response = FirestoreRetrofitClient.apiService.deleteProject(documentPath)
                 if (response.isSuccessful) {
-                    fetchProjects() // Refresh the project list
+                    fetchProjects()
                 } else {
                     println("Error deleting project: ${response.errorBody()?.string()}")
                 }
@@ -85,12 +85,28 @@ class HomeViewModel : ViewModel() {
     fun updateProject(updatedProject: Project) {
         viewModelScope.launch {
             try {
-                FirestoreRetrofitClient.apiService.addProject(updatedProject.toFirestoreRequest())
+                if (updatedProject.documentPath.isNullOrEmpty()) {
+                    println("Invalid document path for updating project.")
+                }
+
+
+                val response =FirestoreRetrofitClient.apiService.updateProject(
+                    documentPath = updatedProject.documentPath.toString().substringAfter("/(default)/"),
+                    project = updatedProject.toFirestoreRequest()
+                )
+                if (response.isSuccessful) {
+                    fetchProjects()
+                } else {
+                    println("Error updating project: ${response.errorBody()?.string()}")
+                }
 
                 fetchProjects()
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
+    }
+    fun editProject(updatedProject: Project) {
+        updateProject(updatedProject)
     }
 }

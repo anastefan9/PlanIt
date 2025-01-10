@@ -24,11 +24,14 @@ import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 
 import androidx.compose.runtime.Composable
@@ -41,6 +44,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.planit.R
 import com.example.planit.model.Project
@@ -55,11 +59,10 @@ fun HomeScreen(
     modifier: Modifier = Modifier
         .fillMaxSize()
 ) {
-//    val projects = projectsViewModel.projects.value
     LaunchedEffect(Unit) {
         homeViewModel.fetchProjects()
     }
-
+    var selectedProject by remember { mutableStateOf<Project?>(null) }
     val projects = homeViewModel.projects.value
 
     Scaffold(
@@ -93,16 +96,109 @@ fun HomeScreen(
                             },
                             onDeleteProject = {
                                 homeViewModel.deleteProject(project.documentPath?.substringAfter("/(default)/"))
-                            }
+                            },
+                            onEditProject = { projectToEdit -> selectedProject = projectToEdit }
                         )
                         Divider()
                     }
                 }
             }
         }
+        if (selectedProject != null) {
+            EditProjectDialog(
+                project = selectedProject,
+                onDismiss = { selectedProject = null },
+                onSave = { updatedProject ->
+                    homeViewModel.editProject(updatedProject)
+                    selectedProject = null
+                }
+            )
+        }
     }
 }
 
+@Composable
+fun EditProjectDialog(
+    project: Project?,
+    onDismiss: () -> Unit,
+    onSave: (Project) -> Unit
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = MaterialTheme.colorScheme.background,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            EditProjectScreen(
+                project = project,
+                closeScreen = onDismiss,
+                onSave = onSave
+            )
+        }
+    }
+}
+
+@Composable
+fun EditProjectScreen(
+    project: Project?,
+    closeScreen: () -> Unit,
+    onSave: (Project) -> Unit,
+    modifier: Modifier = Modifier.fillMaxSize()
+) {
+    var projectName by remember { mutableStateOf(project?.name ?: "") }
+    var projectDescription by remember { mutableStateOf(project?.description ?: "") }
+    var startDate by remember { mutableStateOf(project?.startDate ?: "") }
+    var finalDate by remember { mutableStateOf(project?.finalDate ?: "") }
+    var tasks by remember { mutableStateOf(project?.tasks ?: emptyList()) }
+    var newTaskName by remember { mutableStateOf("") }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text(text = if (project == null) "Add Project" else "Edit Project", style = MaterialTheme.typography.titleLarge)
+
+        OutlinedTextField(
+            value = projectName,
+            onValueChange = { projectName = it },
+            label = { Text("Project Name") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        OutlinedTextField(
+            value = projectDescription,
+            onValueChange = { projectDescription = it },
+            label = { Text("Description") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Button(
+            onClick = {
+                if (projectName.isNotBlank()) {
+                    val updatedProject = project?.copy(
+                        name = projectName,
+                        description = projectDescription,
+                        startDate = startDate,
+                        finalDate = finalDate,
+                        tasks = tasks
+                    ) ?: Project(
+                        name = projectName,
+                        description = projectDescription,
+                        startDate = startDate,
+                        finalDate = finalDate,
+                        tasks = tasks
+                    )
+                    onSave(updatedProject)
+                }
+            }
+        ) {
+            Text("Save")
+        }
+    }
+}
 @Composable
 fun AddButton(
     onClick: () -> Unit,
@@ -132,11 +228,14 @@ fun AddButton(
     }
 }
 
+
+
 @Composable
 fun ProjectItem(
     project: Project,
     onProjectChanged: (Project) -> Unit,
-    onDeleteProject: (String?) -> Unit // Accept nullable documentPath
+    onDeleteProject: (String?) -> Unit,
+    onEditProject: (Project) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
@@ -148,33 +247,19 @@ fun ProjectItem(
                 text = project.name,
                 style = MaterialTheme.typography.headlineSmall
             )
-            IconButton(onClick = { onDeleteProject(project.documentPath) }) {
-                Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete Project")
+            Row {
+                IconButton(onClick = { onEditProject(project) }) {
+                    Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit Project")
+                }
+                IconButton(onClick = { onDeleteProject(project.documentPath) }) {
+                    Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete Project")
+                }
             }
         }
         Text(text = project.description)
         Text(text = "Start: ${project.startDate}")
         Text(text = "End: ${project.finalDate}")
         Spacer(modifier = Modifier.height(8.dp))
-        // Task List
-        project.tasks.forEachIndexed { index, task ->
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(vertical = 4.dp)
-            ) {
-                Checkbox(
-                    checked = task.isDone,
-                    onCheckedChange = { isChecked ->
-                        val updatedTask = task.copy(isDone = isChecked)
-                        val updatedTasks = project.tasks.toMutableList()
-                        updatedTasks[index] = updatedTask
-                        val updatedProject = project.copy(tasks = updatedTasks)
-                        onProjectChanged(updatedProject)
-                    }
-                )
-                Text(text = task.name)
-            }
-        }
     }
 }
 

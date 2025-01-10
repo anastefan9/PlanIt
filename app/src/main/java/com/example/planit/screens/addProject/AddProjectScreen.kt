@@ -154,7 +154,7 @@ fun AddProjectScreen(
                         }
                     },
                 ) {
-                    Text("+")  // or use an Icon(Icons.Default.Add, contentDescription = null)
+                    Text("+")
                 }
             }
 

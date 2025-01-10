@@ -16,14 +16,7 @@ import java.util.UUID
 class ProjectsViewModel: ViewModel() {
     private val _projects = mutableStateOf<List<Project>>(emptyList())
     val projects: State<List<Project>> = _projects
-//
-//    fun addProject(project: Project) {
-//        _projects.value = _projects.value + project
-//    }
-//
-//    fun setProjects(updatedList: List<Project>) {
-//        _projects.value = updatedList
-//    }
+
 
     fun fetchProjects() {
         viewModelScope.launch {
@@ -32,11 +25,11 @@ class ProjectsViewModel: ViewModel() {
 
                 val projectList = response.documents.mapNotNull { doc ->
                     try {
-                        // Safely extract the id field, fallback to a random UUID if missing or invalid
+
                         val idString = doc.fields["id"]?.stringValue.orEmpty()
                         val projectId = if (idString.isNotBlank()) UUID.fromString(idString) else UUID.randomUUID()
 
-                        // Map Firestore document fields to the Project class
+
                         Project(
                             id = projectId,
                             name = doc.fields["name"]?.stringValue.orEmpty().trim(),
@@ -54,11 +47,10 @@ class ProjectsViewModel: ViewModel() {
                         )
                     } catch (e: Exception) {
                         e.printStackTrace()
-                        null // Skip malformed documents
+                        null
                     }
                 }
 
-                // Update the mutable state with the fetched project list
                 _projects.value = projectList
                 println("Mapped Projects: $projectList")
             } catch (e: Exception) {
@@ -86,7 +78,7 @@ class ProjectsViewModel: ViewModel() {
                 )
 
                 val response = FirestoreRetrofitClient.apiService.addProject(firestoreRequest)
-                val addedProject = project.copy(documentPath = response.name) // Get the document path from the response
+                val addedProject = project.copy(documentPath = response.name)
                 fetchProjects() // Refresh after adding
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -94,14 +86,4 @@ class ProjectsViewModel: ViewModel() {
         }
     }
 
-//    fun deleteProject(documentPath: String) {
-//        viewModelScope.launch {
-//            try {
-//                FirestoreRetrofitClient.apiService.deleteProject(documentPath)
-//                fetchProjects() // Refresh the project list
-//            } catch (e: Exception) {
-//                e.printStackTrace()
-//            }
-//        }
-//    }
 }
